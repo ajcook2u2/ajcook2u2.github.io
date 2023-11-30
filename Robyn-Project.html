@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="script.js" defer></script>
+    <title>Robyn MMM Case Study</title>
+</head>
+<body>
+    <div class="text-right title-bar">
+        <a class="title-bar-text" href="#portfolio">Portfolio</a>
+        <a class="title-bar-text" href="resume.html">Resume</a>
+        <a class="title-bar-text">About Me</a>
+      </div>
+      <h1 class="title text-left">Anthony Cook</h1>
+        <h2 class="center">Robyn MMM Case Study</h2>
+        <div class="business-case">
+        <h3 class="business-case-title">Business Case - How should we reallocate our marketing funds?</h3>
+        <p>In many cases, companies need to decide how to spend their marketing funds towards the tactics that will maximise their returns.
+            However, this process can get quickly muddied, as it can be hard to compare different tactics when they are being overseen by different teams, using completely 
+            seperate platforms. Having analysis seperated from any specific platform with a bird's eye view of all tactics therefore becomes necessary to remove siloing and bias
+            and manage funds in a more unified way, tying the team together under a single, more efficient budget.
+        </p>
+        </div>
+        <div class="article">
+        <h3>Methodology</h3>
+        <p>In order to achieve this, I have used the Robyn MMM package. Fitting prior synthetic spend data broken out by tactic and sales over time will generate models with
+            response curves which can be used to forecast what the most optimized allocation will be in this hypothetical case study.
+        </p>
+        <h3>Model Selection</h3>
+        <p>After generating a selection of models, I am selecting Model 5_86_3, which I will from here on refer to simply as 'Model'. I am selecting this model as it has the highest 
+            r2 with both the test and validation set, as well as tighter confidence intervals for the CPA by tactic. 
+        </p>
+        <div class="image-container">
+            <img src="5_86_3.png" class="expandable-image" onclick="openPopup()">
+        </div>
+        <div id="popup" class="popup">
+            <div class="popup-content">
+                <span class="close" onclick="closePopup()">&times;</span>
+                <img src="5_86_3.png" class="expandable-image" onclick="openPopup()">
+            </div>
+        </div>
+        
+        <h3>Reallocation</h3>
+        <p>Now that a model has been selected, I can use the projected response curve to reallocate funds to maximise sales. In this sample case, the reallocation is 
+            projected to lead to an additional 5k sales. 
+        </p>
+        <div class="image-container">
+        <img src="5_86_3_reallocated_best_cpa.png" class="expandable-image" onclick="openPopup1()">
+        </div>
+        <div id="popup1" class="popup">
+            <div class="popup-content">
+                <span class="close" onclick="closePopup1()">&times;</span>
+                <img src="5_86_3_reallocated_best_cpa.png" class="expandable-image" onclick="openPopup1()">
+            </div>
+        </div>    
+        
+    </div>    
+</body>
+</html>
