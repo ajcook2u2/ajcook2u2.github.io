@@ -8,17 +8,22 @@
     <title>Product Recommendation</title>
 </head>
 <body>
-    <div class="text-right title-bar">
-        <a class="title-bar-text" href="#portfolio">Portfolio</a>
-        <a class="title-bar-text" href="resume.html">Resume</a>
-        <a class="title-bar-text">About Me</a>
-      </div>
-      <h1 class="title text-left">Anthony Cook</h1>
+  <div class="text-right title-bar">
+    <a class="title-bar-text" href="index.html#portfolio">Portfolio</a>
+    <a class="title-bar-text" href="resume.html">Resume</a>
+    <a class="title-bar-text" href="index.html#about-me">About Me</a>
+    <a class="title-bar-text" href="index.html#contact-me">Contact</a>
+  </div>
+      <h1 class="title-name text-left">Anthony Cook</h1>
       <h2 class="title text-center">Product Recommendation Case Study</h2>
-      <h3>Business Case - What products should we recommend after a customer makes a purchase</h3>
+      
+        <div class="business-case">
+      <h3 class="business-case-title">Business Case - What products should we recommend?</h3>
       <p>For many reasons, companies would like to be able to predict what products customers are likely to purchase after a sale. This can 
         help make additional sales and provide direction on how to best market products to customers.
       </p>
+    </div>
+    <div class="article">
       <h3>Methodology</h3>
       <p>In this sample business case, I am going to use apriori to systematically analyze sales in order to make associations between items which can then be used to recommend
         products to customers.
@@ -38,6 +43,6 @@
         scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
         vizElement.parentNode.insertBefore(scriptElement, vizElement);
     </script>
-    
+    </div>
 </body>
 </html>
