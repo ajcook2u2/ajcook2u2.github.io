@@ -1,9 +1,10 @@
 .title {
-    color: red;
+    color: black;
+    padding-top: 25px;
 }
 
 .title-name {
-    color: red;
+    color: #000000;
     padding-top: 4%;
 }
 
@@ -11,17 +12,32 @@
     position: fixed;
     top: 0;
     width: 100%;
-    background-color:red;
-    font-size: 40px;
+    background-color: white;
+    font-size: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.title-bar-text.name {
+    margin-right: auto; 
+    padding-left: 10px;
+    color: black;
+}
+
+.nav-links {
+    display: flex;
+    color: black;
 }
 
 .title-bar-text {
-    color: white;
-    font-size: 20px;
+    padding-right: 8px;
+    color: black;
 }
 
-.body {
+body {
     font-size: 40px;
+    margin: 0;
+    padding: 0;
 }
 
 .center {
@@ -41,19 +57,34 @@
 }
 
 .business-case {
-    background-color: rgb(236, 152, 152);
-    padding-left: 20%;
-    padding-right: 20%;
-    padding-top: 0.05%;
-    padding-bottom: 0.05%;
+    background-color: #c2d7eb;
     font-size: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    text-align: center;
 }
 
 .business-case-title {
     text-decoration: underline;
     text-decoration-color: white;
     text-underline-offset: 7px;
+    margin: 0;
+    margin-top: 5px;
 }
+
+.inner-business-case {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap; 
+    max-width: 800px;
+}
+
+.business-case-item {
+    flex: 1; 
+    max-width: 250px;
+    margin: 10px;
+  }
 
 .article {
     padding-left: 20%;
@@ -163,3 +194,14 @@ input {
 .copywrite {
     font-size: 13px;
 }
+
+.social-links {
+    padding-top: 0;
+    margin: 0;
+    padding-bottom: 0;
+}
+
+.about-me-text {
+    padding-right: 25px;
+}
+
