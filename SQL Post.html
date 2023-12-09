@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="script.js" defer></script>
+    <title>SQL: More Than Databases</title>
+</head>
+<body>
+    <div class="title-bar">
+        <a class="title-bar-text name" href="index.html">Anthony Cook</a>
+        <div class="nav-links text-right">
+            <a class="title-bar-text" href="index.html#portfolio">Portfolio</a>
+            <a class="title-bar-text" href="resume.html">Resume</a>
+            <a class="title-bar-text" href="index.html#about-me">About Me</a>
+            <a class="title-bar-text" href="index.html#contact-me">Contact</a>
+            <a class="title-bar-text" href="Blog.html">Blog</a>
+        </div>
+    </div>
+    <h1 class="title text-center">SQL: More Than Databases</h1>   
+    <div class="article">
+    <div class="text-center">
+    <img src="Sql_data_base_with_logo.png" height="200" style="padding: 10px"> 
+    </div>
+    <p>When first getting acquainted with Data Analysis, I knew I had to learn SQL. But thats the thing I knew I had to learn it. 
+        It wasn’t something I was particularly excited about. </p>
+    <p>Initially, I thought that SQL only had a narrow use case in managing a database on a computer or server and pulling data to then be analyzed with Python or R, 
+        where the real interesting work would happen. Of course, since then I have learned that analysis can be done in SQL without needing to pull the data into 
+        another language, and that there are even more uses that had I known back then would have been a huge motivation to focus on SQL. 
+    </p>
+    <h2>Spreadsheets</h2>
+    <p> While coding languages will always be more powerful in data analysis, spreadsheets are usefull for doing some quick analysis or working with others who don't know hopw to code. 
+        However, some coding functionality would be appreciated at times, and thankfully SQL is easily accessible in Google Sheets. 
+        Just use the Query function in a cell, and fill it out:</p>
+    <div class="code-block">
+    <p class="code-block-text">=QUERY('Sheetname'!DataRange, "SQL query", Header)</p>
+    <p class="code-block-text">=QUERY('Example Data'!A1:E4, "select B where (D>175 and E>53)", 2)</p>
+    <p class="code-block-text">#Don't use the sheetname or '!' if the data is on the same sheet</p>
+    <p class="code-block-text">=QUERY(A1:E4, "select B where (D>175 and E>53)", 2)</p>
+    </div>
+    <div class="text-center">
+        <a href="https://docs.google.com/spreadsheets/d/1815H5TCe91LLT6tD6FmxMHmeJAAkr4o5Q6rNpV6xiFk/copy" target="_blank">Examples based on Google's demo sheet, linked here.</a>
+    </div>
+    <br>
+    <p>Sheets uses a subset of SQL named Query Language, however it is also very similar to base SQL. 
+        That’s why ‘FROM’ is not used in the query example. For an overview of Query Language, click here.</p>
+    <p>Now for Excel users, there is something similar, but it requires more setup, the way to do it with native Excel functionality is to connect it to PowerQuery, 
+        and make the SQL query there. Microsoft has an article about that if you are interested here.</p>
+    <h2>Data Viz</h2>
+    <p>SQL is widely used in Tableau, though like Sheets, it is techincally a different language-VisQL, but it is functionally very similar.
+        It is used to filter and preprocess data before it gets visualized, but one of my favorite use cases is letting users dynamically select metrics. </p>
+    <div class="text-center">
+    <img src="Screenshot 2023-12-06 202054.png">
+    <p>This allows the user-selection to be reflected in the dashboard.<br><a href="Dynamic Vis.html">Click here to see this project in action.</a></p>
+</div>
+    <p>For those who are more interested in other data viz tools, it is used in many platforms, from PowerBI to Looker, to Qlik, SQL has a use.</p>
+    <h2>Cloud</h2>
+    <p>Amazon, Google, IBM, Oracle, Snowflake, and undoubtedly more-in short functionally every cloud 
+        provider-has product offerings which use SQL to manage relational databases and data warehouses in the cloud. </p>
+    <p>For example, Google uses SQL in it's BigQuery and Cloud SQL to manage data and even build and deploy ML models with BigQuery and VertexAI, 
+        not only using SQL, but adding more functionality that typically is reserved for other languages,
+         allowing more seamless data analysis to be conducted, while leveraging the ever popular strengths of cloud computing. </p>
+    <p>As cloud computing continues to grow and more and more companies shift to them, SQL will remain useful, for many use case across many platforms.</p>
+    <h2>SQL's Enduring Versatility</h2>
+<p> Being able to be used in Data Visualization, Spreadsheets, and Cloud Computing, SQL has a place in much of the day to day work in Data Science, and given 
+    its versaility, wide use, and clean syntax thats not changing anytime soon. Despite being made in the 1970s, SQL is a proven pillar of Data Science that is 
+    here to stay.
+</p>
+    <h2>Addendum</h2>
+    <p>Many may be asking why I haven’t included the fact that SQL can be used in Python or R. While that is true, and can help lead to cleaner syntax, 
+        there are significant drawbacks that make me hesitant to recommend it. While setup is easy:</p>
+    <div class="code-block">
+        <p class="code-block-text">#Python</p>
+        <p class="code-block-text">import sqldf</p>
+        <p class="code-block-text">query = '''SELECT * FROM dataframe LIMIT 5'''</p>
+        <p class="code-block-text">print(sqldf.run(query))</p>
+        <p class="code-block-text">#R</p>
+        <p class="code-block-text">library(sqldf)</p>
+        <p class="code-block-text">sqldf("SELECT * FROM dataframe LIMIT 5")</p>
+    </div>
+    <br>
+    <p>When using this, performance takes a hit. Behind the scenes, the dataframe is being loaded into a temporary SQL database 
+        for the query to be ran against, which is going to add overhead. 
+        And in addition to that, not all functions work properly, for example, adding or dropping a column doesn’t work. 
+        So to work around that, two tables must be made and then merged:</p>
+    <div class="code-block">
+        <p class="code-block-text">#sqldf</p>
+        <p class="code-block-text">new_df = pd.dataframe({'New_Column': new_column_values})</p>
+        <p class="code-block-text">query = '''SELECT * FROM df LEFT JOIN new_df ON df.index = new_df.index'''</p>
+        <p class="code-block-text">df = sqldf.run(query)</p>
+        <p class="code-block-text">#pandas</p>
+        <p class="code-block-text">df['new_column'] = new_values</p>
+    </div>
+    <br>
+    <p>The whole point of doing this is to have cleaner and easier to read syntax, and this work arounds defeat the whole point.</p>
+    <p>Therefore, while SQL has amazing uses, I don't think this is one of them, and can't recommend using SQL in either Python or R in most circumstances.</p>
+</div>
+<div class="social-links">
+    <a href="https://www.linkedin.com/in/anthony-cook-09160313a/" target="_blank"><img class="logo1" alt="LinkedIn Profile" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAe1BMVEX///8AZsgAXcYAWsUAV8QAY8fo8frv9vzd6PYAYcc8ftAAXMUObMqlwOb0+f0AYMZnl9hum9nC1e94otxdktaMr+DE1+8ZcMvl7vmyyepGhNIldM0teM57pNyDqd4AacnX5PVMh9O4zuzX5fWevOWivuYAUcJVjNSQs+LB8NeeAAAEpklEQVR4nO2dfXeaMBSHgRAVFdIK+Ia2na7rvv8nHHbHVggEz+bNJfB7ztk/M4pPTS6BXHI9DwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE4xWcX5c7Y/LH0VPAbpLw/7LM3j9ZRbzvNW6UaIQEVSSv+BlB8nIxUIsUlXnHrbVAr1UDNdVQl5nHH5ZaEitbuiwmzLIZiLyIrfhUjk1v22RWDN78KisPwzrgTt8NORwmrIiUPLfhfCeOCCNhVXPIKloqWOuhVMgr4v7ISbwnaQ+UYWNgRzu6eJKoGF8yJjH71goZ9m9mYyTUQZteCWK45eCal/xKOdyXY7KiU25IujVySt4Io3zlwgnp+m3J2UvJtuetBLN5SCU/5OWnbTCaHhuheGlAMx5pyxXQneCQ1z/kBThhrKuWnaPWV78I3TBqJnQsOs49tLoYp5oWjvwknKqeneaCjDbJ1cmq2fQsIfUu4JDQ+mLx5t3r4azgq6ESsPhIZLg2E0rzTd0ykuCQ0Nh5XLpNqW8GYHoaHhS4dvtbZnsitJRWjYfsKXP7TGXYH3nwlYDBcnrTHZFI/HUOirtcmCyFCwGDaN/uWgDJsiOFU05emlTXdPqH5DpnGoX5aSXS7zGAY7rfGJKtIw9VJ9smiepjtn6Iv6CXFNNqdhMvSj6kicUvnxGcrlreKU8L4jl6Ev1XdHPVHey2AzLMdiEV9WhrbxgfSuI6OhLwOhpBIB7c0oTkM7wBCGMOTHKUOpFiIUovy3uD/ZmMswWFT5bquqL3zdSC3PLYeX03mSJMnkfHo5iDv/gFwz71lSZXI964u3yv9fl+ik2PysTmUnP1/vuuBiMgzrl8DT67WFqCWi7z4/RRRNC53v6o5FHScMZdCSK5pk3RM+FwyDefujIrvOBGsHDIVxjfMcdSj23/DX0XyUWUdM7b1h3LmG25Fm3XvDdfdxnowRtfeGdzA1nheHYOi9mFaQB2Fo/BEHYeg9G0biMAzfDOF0GIamtA9nDCe748f+I42bU9MNCeWOGJ4/Lhe9UkaB+GhyNKxcuWH4+yYvLAr1pTnTkytOGObVQNKk6HYv1Sae2rs979Vpw9d6oFRPWpv2LAAHDGN9jAVJvZHThnP9XKenp7tsmDSESfW7fiyXDZsS3vTkbZcNdw0fE2mhxmXDpqc2YAjDRwHDW2AIQxjSAMNbYAhDGNIAw1tgODrDQV3jw/AvMKQBhrfAEIbthpRPqxuyXCwaUu721S5o05ByTwXDUe0ZSsp9MQx7m1g0pNzbxPDga1jP+k2+DOupFv9rSLk/jWGrCzmvI9teKZrev6y3aj8S5R5DpmwzWaf1lfve33qgiHLTveHv9dWP/dooN73uwdaXZeS6I436n5n0wpC0rMfg974cwf6lPRiI1DUSetBLaQX5u6nqeKTov+Hfz5u8rM7g92Qfwb76w6+NMIL6FiOoUTL8OjMjqBU0gnpPI6jZZb/uWmC77po3/Np53gjqH5bMjjZqWEYpVw3LT27qkD66EGkf6pD+ZbqO8/SzlqxUi4fUklWftWSf8/cVZbEOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEPAH+MFo86DxACQAAAAASUVORK5CYII="></a>
+<a href="https://github.com/ajcook2u2" target="_blank"><img class="logo" alt="Github profile" src="data:image/png;base64,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"></a>
+<p class="copywrite text-center">© 2024 Anthony Cook</p>
+</div>   
+</body>
+</html>
