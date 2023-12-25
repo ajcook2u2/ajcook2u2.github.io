@@ -157,8 +157,21 @@
             We can take the constants from the values that we have already calculated in R, to fill in the equation, and use [Budget Parameter] to feed in spend values that the user selects.
         </p>
 
-        Embed the Tableau Dashboard here.
-
+    </div>
+    <br>
+    <div class='tableauPlaceholder' id='viz1703535601651' style='position: relative'><noscript><a href='#'><img alt=' ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;MM&#47;MMMTest&#47;Dashboard1&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='MMMTest&#47;Dashboard1' /><param name='tabs' value='yes' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;MM&#47;MMMTest&#47;Dashboard1&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                <script type='text/javascript'>                    var divElement = document.getElementById('viz1703535601651');                    var vizElement = divElement.getElementsByTagName('object')[0];                    if ( divElement.offsetWidth > 800 ) { vizElement.style.minWidth='500px';vizElement.style.maxWidth='100%';vizElement.style.minHeight='950px';vizElement.style.maxHeight=(divElement.offsetWidth*0.75)+'px';} else if ( divElement.offsetWidth > 500 ) { vizElement.style.minWidth='500px';vizElement.style.maxWidth='100%';vizElement.style.minHeight='950px';vizElement.style.maxHeight=(divElement.offsetWidth*0.75)+'px';} else { vizElement.style.width='100%';vizElement.style.minHeight='2000px';vizElement.style.maxHeight=(divElement.offsetWidth*1.77)+'px';}                     var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);                </script>
+    <script type='text/javascript'>
+      var divElement = document.getElementById('viz1703535601651');
+      var vizElement = divElement.getElementsByTagName('object')[0];
+      vizElement.style.width = '1200px'; 
+      vizElement.style.height = '800px';  
+      var scriptElement = document.createElement('script');
+      scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+      vizElement.parentNode.insertBefore(scriptElement, vizElement);
+    </script>
+ 
+    <div class="article">
+        <br>
         <p>There is one thing to consider however: the curve we have made is finite, what if budgets are to increase beyond the curve's limits?<br>
             Well given how the saturation curve is generated here, we can’t use Robyn directly to achieve this, as the underlying equation has a hard limit on the values it can generate.
              We can however estimate what it would be with machine learning. However this comes with it's own drawbacks that I’ll get into.<br>
@@ -227,18 +240,20 @@ output$tactic_cost_per_sale <- renderText({<br>
   shinyApp(ui, server)
             </p>
         </div>
+    <br>
     <p>
         If we apply that boilerplate code to all three tactics, we get this:
-    </p><br>
-
-    Embed a screenshot of the shiny app.<br>
+    </p>
+    <img src="Screenshot 2023-12-25 152613.png" width="850px">
+    <br>
     <br>
     <p>
         Now while we have increased the range that the user can input, you will notice that there are still limits. 
         That is because since we overfit the model on purpose as detailed earlier, the model misbehaves if we extend too far past the previous limits.
-    </p><br>
+    </p>
+    <br>
 
-    Embed a screenshot of passing the limits.<br>
+    <img src="Screenshot 2023-12-25 153123.png" width="850px"><br>
     <br>
     <p>
         This goes to illustrate that in order for this to be used, stakeholders need to be informed of the limitations of these forecasts, and have their expectations set 
