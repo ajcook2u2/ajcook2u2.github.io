@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="script.js" defer></script>
+    <title>Data Driven Allocation: A Deep Dive</title>
+</head>
+<body>
+    <div class="title-bar">
+        <a class="title-bar-text name" href="index.html">Anthony Cook</a>
+        <div class="nav-links text-right">
+            <a class="title-bar-text" href="index.html#portfolio">Portfolio</a>
+            <a class="title-bar-text" href="resume.html">Resume</a>
+            <a class="title-bar-text" href="index.html#about-me">About Me</a>
+            <a class="title-bar-text" href="index.html#contact-me">Contact</a>
+            <a class="title-bar-text" href="Blog.html">Blog</a>
+        </div>
+    </div>
+    <h1 class="title text-center">Data Driven Allocation: A Deep Dive</h1>   
+    <div class="article">
+        <h2>Intro</h2>
+        <p>When planning marketing budgets, it can quickly get complicated, 
+            juggling between different tactics, KPIs, and different groups of people with different perspectives can quickly make the process much more difficult.</p>
+        <p>
+            By integrating a MMM, forecasts can be generated, which will allow stakeholders to see and easily understand the impact on the business that the marketing
+             budget shifts will have, helping to shift the conversation into one with concrete goals and business understanding from a holistic perspective.
+        </p>
+        <p>The Robyn MMM is an advanced open source MMM from Meta Science Lab, an open source cutting edge Marketing Mix Model, that we can use to generate forecasts to 
+            plan out marketing budgets.
+        </p>
+        <h2>Data Preprocessing</h2>
+        <p>Lets hop into R and import the sales data to get started, it has sales data along with TikTok, Facebook, and Google Ads spend broken out by week.
+            We'll also need to do some light preprocessing to feed it into Robyn.</p>
+        <div class="code-block">
+            <p class="code-block-text">data <- read_csv("marketing_mix.csv")<br>
+               #format the date column into the format Robyn needs<br>
+               data$Date <- mdy(data$Date)<br>
+               #pull in the list of holidays that is the default for the Robyn package, that includes major US holidays<br>
+               holidays <- dt_prophet_holidays
+            </p>
+        </div>
+        <br>
+        <h2>Generating the models with Robyn</h2>
+        <p>Robyn uses 'Input Collect' to contain the inputs that will be used to build the models. Lets prefill it here, to make our code more readable.</p>
+        <div class="code-block">
+            <p class="code-block-text">
+                InputCollect <- robyn_inputs(<br>
+                    date_var = 'Date',<br>
+                    dep_var = 'Sales',<br>
+                    dt_input = data,<br>
+                    dt_holidays = holidays,<br>
+                    paid_media_spends = c('TikTok', 'Facebook', 'Google_Ads'),<br>
+                    paid_media_vars = c('TikTok', 'Facebook', 'Google_Ads'),<br>
+                    prophet_country = 'US',<br>
+                    window_start = '2018-1-7',<br>
+                    window_end = '2021-10-31',<br>
+                    adstock = 'geometric', #can also be weibull_cdf or weibull_pdf, but for #later parts in this example to work, this must be geometric.<br>
+                    dep_var_type = 'conversion' #can also be 'revenue'
+                    )
+            </p>
+        </div>
+        <br>
+        <p>Now that everything is prepped, lets generate the models</p>
+        <div class="code-block">
+            <p class="code-block-text">
+            OutputModels <- robyn_run(InputCollect = InputCollect,<br>
+		    cores = NULL, #if left null cores, will default to the max available - 1<br>
+            iterations = 2000,<br>
+            trials = 5, <br>
+            ts_validation = TRUE,<br>
+            add_penalty_factor = FALSE)
+            </p>
+        </div>
+        <br>
+        <p>
+            Robyn has a feature that allows for previously generated models to be reloaded for later use, called ‘refresh’. However I prefer to simply save
+             the .rds objects themselves, as I have found it to be a more intuitive and consistent process. 
+            Also, if the OutputModels object is saved, all the models can be saved, in case the clustering doesn’t include a model that would be later used.
+        </p>
+        <div class="code-block">
+            <p class="code-block-text">
+                saveRDS(OutputModels, file = "output_models.rds")<br>
+                loaded_data <- readRDS("output_models.rds")<br>
+                <br>
+                saveRDS(OutputCollect, file = "output_collect.rds")<br>
+                OutputCollect <- readRDS("output_collect.rds")<br>
+            </p>
+        </div>
+        <br>
+        <h2>Response Curves</h2>
+        <p>We can generate a response curve via the 'robyn_response' function.</p>
+        <div class="code-block">
+            <p class="code-block-text">
+                  tiktok_curve <- robyn_response(
+                  InputCollect = InputCollect,
+                  OutputCollect = OutputCollect,
+                  select_model = select_model,
+                  metric_name = 'TikTok',
+                  metric_value = 2000,
+                  date_range = "last_5" # can also be a range, ie: c('2018-01-14', '2018-02-04')
+                )
+            </p>
+        </div>
+        <br>
+        <p>
+            This scales the curve to fit the data from the selected range, 
+            meaning that we can get a scaled curve to account for different seasonalities that the business has experienced in the past. 
+            I'm keeping it simple and using the last 5 periods in this case, but using the data from the previous year would allow for the scaling to account for the seasonality 
+            of the upcoming period.
+        </p>
+        <p>
+            However, this doesn’t give us what we need, it's not a continuous curve, we instead get a distinct selection of points, 
+            which isn’t going to help generate the flexibility in predictions that we need to make a dynamic dashboard.
+        </p>
+        <p>
+            So let’s generate the saturation curve.
+        </p>
+        <div class="code-block">
+            <p class="code-block-text">
+                #get the alpha and gamma from the model, it's in the OutputCollect$resultHypParam, just find the ones that match the model and tactic.<br>
+                alpha <- subset(OutputCollect$resultHypParam$TikTok_alphas, OutputCollect$resultHypParam$solID == '5_86_3')<br>
+                gamma <- subset(OutputCollect$resultHypParam$TikTok_gammas, OutputCollect$resultHypParam$solID == '5_86_3')<br>
+                #generate a vector of numbers between 0-1, we’ll need this to feed into the saturation formula<br>
+                x <- seq(0, 1, length.out = 500)<br>
+                #make a copy of that vector<br>
+                y <- numeric(length(x))<br>
+                            <br>
+                #feed the sequence into the equation for the saturation curve for the geometric models.<br>
+                for (i in 1:length(x)) {<br>
+                  x1 <- x[i]<br>
+                  y[i] <- (x1^alpha) / (x1^alpha + gamma^alpha)<br>
+                }<br>
+                <br>
+                #scales the curve<br>
+                tactic_spend <- tiktok_curve$plot$data$metric<br>
+                tactic_response <- tiktok_curve$plot$data$response<br>
+                expected_spend <- x * max(tactic_spend)<br>
+                response <- y * max(tactic_response)<br>
+                response <- response * (max(tactic_response) / max(response))<br>
+            </p>
+        </div>
+        <br>
+        <p>This results in the curve that Robyn gave us, but now we can access the full curve and generate sales for any amount of spend that we like.<br>
+            We can take this equation and put it transfer it into other programs, such as Tableau in a calculated field:
+        </p>
+        <div class="code-block">
+            <p class="code-block-text">
+                round((((([Budget Parameter] / max(tactic_spend)^alpha) / (([Budget Parameter] / max(tactic_spend)^alpha + gamma^alpha)) 
+                * max_tactic_response) * (max(tactic_response) / max(response))
+            </p>
+        </div>
+        <br>
+        <p>
+            We can take the constants from the values that we have already calculated in R, to fill in the equation, and use [Budget Parameter] to feed in spend values that the user selects.
+        </p>
+
+        Embed the Tableau Dashboard here.
+
+        <p>There is one thing to consider however: the curve we have made is finite, what if budgets are to increase beyond the curve's limits?<br>
+            Well given how the saturation curve is generated here, we can’t use Robyn directly to achieve this, as the underlying equation has a hard limit on the values it can generate.
+             We can however estimate what it would be with machine learning. However this comes with it's own drawbacks that I’ll get into.<br>
+             To start, let's fit the data into the machine learning model, for this example, I’m going with a simple linear regression.
+        </p>
+        <div class="code-block">
+            <p class="code-block-text">
+                plot_data <- data.frame(expected_spend, response)<br>
+                model <- lm(response ~ poly(x, degree = 18), data = plot_data
+            </p>
+        </div>
+        <br>
+        <p>
+            Note that I’m not splitting the data into training or testing sets, and that I am using a really high degree for this prediction. 
+            That’s because we want it to fit the response curve as best as we can,
+             remember we aren’t predicting the sales right now, we’re predicting the prediction that Robyn would give of the sales, so any distortion will be magnified. <br>
+             Now that we have this, it's harder to export, simply writing the equation is a much more involved process this time around. Tableau also has limitations on 
+             importing machine learning models, requiring an Rserve to be running to process it. Instead for this example, I’ll use an Rshiny app in an RMarkdown file.<br>
+             To get started, lets go ahead and save the .rds of the model so we can easily import it into the RMarkdown going forward:
+        </p>
+        <div class="code-block">
+            <p class="code-block-text">
+                saveRDS(model, file='model.rds')
+            </p>
+        </div>
+        <br>
+        <p>
+            Let's quickly set up the Shiny App.
+        </p>
+        <div class="code-block">
+            <p class="code-block-text">
+                ui <- fluidPage(<br>
+titlePanel(‘MMM Curves’),<br>
+sidebarLayout(<br>
+sidebarPanel(<br>
+  	sliderInput('tactic_budget',’tactic_budget', value=1500, min=1, max=[max], ticks=FALSE),<br>
+  	textOutput(outputId = 'tactic_sales'),<br>
+  	textOutput(outputId = 'tactic_cost_per_sale'),<br>
+mainPanel(<br>
+  	fluidRow(<br>
+  	column(6, plotOutput(outputId = 'tactic_plot')),<br>
+	))<br>
+<br>
+server <- function(input, output) {<br>
+  output$tactic_budget <- renderPlot({<br>
+	Spend <- seq(0, input$tactic_budget, length.out=input$tactic_budget)<br>
+	Sales <- predict(google_model, newdata = data.frame(Spend))<br>
+	ggplot(data = data.frame(Spend, Sales), aes(Spend, Sales)) +<br>
+  	geom_line() +<br>
+  	labs(title = "Google Sales Curve")<br>
+  })<br>
+<br>
+output$tactic_sales <- renderText({<br>
+	x <- seq(0, input$tiktok_budget, length.out=input$tiktok_budget)<br>
+	y <- predict(model, newdata = data.frame(Spend = x))<br>
+	paste('Sales:', round(max(y)))<br>
+  })<br>
+<br>
+output$tactic_cost_per_sale <- renderText({<br>
+	x <- seq(0, input$google_budget, length.out=input$google_budget)<br>
+	y <- predict(google_model, newdata = data.frame(metric = x))<br>
+	z <- max(x) / max(y)<br>
+	z <- (round(z * 100)) / 100<br>
+	paste('Cost per Sale:', z)<br>
+  }))<br>
+  shinyApp(ui, server)
+            </p>
+        </div>
+    <p>
+        If we apply that boilerplate code to all three tactics, we get this:
+    </p><br>
+
+    Embed a screenshot of the shiny app.<br>
+    <br>
+    <p>
+        Now while we have increased the range that the user can input, you will notice that there are still limits. 
+        That is because since we overfit the model on purpose as detailed earlier, the model misbehaves if we extend too far past the previous limits.
+    </p><br>
+
+    Embed a screenshot of passing the limits.<br>
+    <br>
+    <p>
+        This goes to illustrate that in order for this to be used, stakeholders need to be informed of the limitations of these forecasts, and have their expectations set 
+        accordingly. If that is achieved this can be an extraordinary tool in planning budgets, that is extremely flexible. It can be used more granularly, 
+        on individual campaigns within tactics to have more detailed forecasts, and in addition, as long as there is data over time corresponding with marketing spend, 
+        any KPI could be forecasted, such as website sessions or newsletter signups in addition to revenue or sales it was designed for.
+    </p>
+    </div>
+    <div class="social-links">
+        <a href="https://www.linkedin.com/in/anthony-cook-09160313a/" target="_blank"><img class="logo1" alt="LinkedIn Profile" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAe1BMVEX///8AZsgAXcYAWsUAV8QAY8fo8frv9vzd6PYAYcc8ftAAXMUObMqlwOb0+f0AYMZnl9hum9nC1e94otxdktaMr+DE1+8ZcMvl7vmyyepGhNIldM0teM57pNyDqd4AacnX5PVMh9O4zuzX5fWevOWivuYAUcJVjNSQs+LB8NeeAAAEpklEQVR4nO2dfXeaMBSHgRAVFdIK+Ia2na7rvv8nHHbHVggEz+bNJfB7ztk/M4pPTS6BXHI9DwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE4xWcX5c7Y/LH0VPAbpLw/7LM3j9ZRbzvNW6UaIQEVSSv+BlB8nIxUIsUlXnHrbVAr1UDNdVQl5nHH5ZaEitbuiwmzLIZiLyIrfhUjk1v22RWDN78KisPwzrgTt8NORwmrIiUPLfhfCeOCCNhVXPIKloqWOuhVMgr4v7ISbwnaQ+UYWNgRzu6eJKoGF8yJjH71goZ9m9mYyTUQZteCWK45eCal/xKOdyXY7KiU25IujVySt4Io3zlwgnp+m3J2UvJtuetBLN5SCU/5OWnbTCaHhuheGlAMx5pyxXQneCQ1z/kBThhrKuWnaPWV78I3TBqJnQsOs49tLoYp5oWjvwknKqeneaCjDbJ1cmq2fQsIfUu4JDQ+mLx5t3r4azgq6ESsPhIZLg2E0rzTd0ykuCQ0Nh5XLpNqW8GYHoaHhS4dvtbZnsitJRWjYfsKXP7TGXYH3nwlYDBcnrTHZFI/HUOirtcmCyFCwGDaN/uWgDJsiOFU05emlTXdPqH5DpnGoX5aSXS7zGAY7rfGJKtIw9VJ9smiepjtn6Iv6CXFNNqdhMvSj6kicUvnxGcrlreKU8L4jl6Ev1XdHPVHey2AzLMdiEV9WhrbxgfSuI6OhLwOhpBIB7c0oTkM7wBCGMOTHKUOpFiIUovy3uD/ZmMswWFT5bquqL3zdSC3PLYeX03mSJMnkfHo5iDv/gFwz71lSZXI964u3yv9fl+ik2PysTmUnP1/vuuBiMgzrl8DT67WFqCWi7z4/RRRNC53v6o5FHScMZdCSK5pk3RM+FwyDefujIrvOBGsHDIVxjfMcdSj23/DX0XyUWUdM7b1h3LmG25Fm3XvDdfdxnowRtfeGdzA1nheHYOi9mFaQB2Fo/BEHYeg9G0biMAzfDOF0GIamtA9nDCe748f+I42bU9MNCeWOGJ4/Lhe9UkaB+GhyNKxcuWH4+yYvLAr1pTnTkytOGObVQNKk6HYv1Sae2rs979Vpw9d6oFRPWpv2LAAHDGN9jAVJvZHThnP9XKenp7tsmDSESfW7fiyXDZsS3vTkbZcNdw0fE2mhxmXDpqc2YAjDRwHDW2AIQxjSAMNbYAhDGNIAw1tgODrDQV3jw/AvMKQBhrfAEIbthpRPqxuyXCwaUu721S5o05ByTwXDUe0ZSsp9MQx7m1g0pNzbxPDga1jP+k2+DOupFv9rSLk/jWGrCzmvI9teKZrev6y3aj8S5R5DpmwzWaf1lfve33qgiHLTveHv9dWP/dooN73uwdaXZeS6I436n5n0wpC0rMfg974cwf6lPRiI1DUSetBLaQX5u6nqeKTov+Hfz5u8rM7g92Qfwb76w6+NMIL6FiOoUTL8OjMjqBU0gnpPI6jZZb/uWmC77po3/Np53gjqH5bMjjZqWEYpVw3LT27qkD66EGkf6pD+ZbqO8/SzlqxUi4fUklWftWSf8/cVZbEOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEPAH+MFo86DxACQAAAAASUVORK5CYII="></a>
+    <a href="https://github.com/ajcook2u2" target="_blank"><img class="logo" alt="Github profile" src="data:image/png;base64,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"></a>
+    <p class="copywrite text-center">© 2024 Anthony Cook</p>
+    </div>
+</body>
+</html>
