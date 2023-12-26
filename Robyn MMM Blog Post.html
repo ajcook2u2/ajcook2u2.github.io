@@ -23,7 +23,7 @@
     <div class="article">
         <h2>Intro</h2>
         <p>When planning marketing budgets, it can quickly get complicated, 
-            juggling between different tactics, KPIs, and different groups of people with different perspectives can quickly make the process much more difficult.</p>
+            juggling between different tactics, KPIs, and different groups of people with different perspectives can quickly make the process more challenging.</p>
         <p>
             By integrating a MMM, forecasts can be generated, which will allow stakeholders to see and easily understand the impact on the business that the marketing
              budget shifts will have, helping to shift the conversation into one with concrete goals and business understanding from a holistic perspective.
@@ -72,6 +72,26 @@
             trials = 5, <br>
             ts_validation = TRUE,<br>
             add_penalty_factor = FALSE)
+            </p>
+        </div>
+        <br>
+        <p>
+            Now that we have the models, we can use OutputCollect to generate some one-pagers(documents that give an overview of the model's performance)
+             and allocations straight from Robyn, but most important for right now,
+            it can also cluster similar models together, trimming the amount of models that we need to go through.
+        </p>
+        <div class="code-block">
+            <p class="code-block-text">
+                OutputCollect <- robyn_outputs(
+                    InputCollect, OutputModels,
+                    pareto_fronts = "auto", # automatically pick how many pareto-fronts to fill min_candidates (100)
+                    min_candidates = 100, # top pareto models for clustering. Default to 100
+                    calibration_constraint = 0.1, # range c(0.01, 0.1) & default at 0.1
+                    csv_out = "pareto", # "pareto", "all", or NULL (for none)
+                    clusters = TRUE, # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
+                    export = create_files, # this will create files locally
+                    plot_folder = robyn_directory, # path for plots exports and files creation
+                    plot_pareto = create_files # Set to FALSE to deactivate plotting and saving model one-pagers)
             </p>
         </div>
         <br>
@@ -171,6 +191,11 @@
         <p>There is one thing to consider however: the curve we have made is finite, what if budgets are to increase beyond the curve's limits?<br>
             Well given how the saturation curve is generated here, we can’t use Robyn directly to achieve this, as the underlying equation has a hard limit on the values it can generate.
              We can however estimate what it would be with machine learning. However this comes with it's own drawbacks that I’ll get into.<br>
+        </p>
+        <h2>
+            Machine Learning Extension
+        </h2>
+        <p>
              To start, let's fit the data into the machine learning model, for this example, I’m going with a simple linear regression.
         </p>
         <div class="code-block">
@@ -184,9 +209,11 @@
             Note that I’m not splitting the data into training or testing sets, and that I am using a really high degree for this prediction. 
             That’s because we want it to fit the response curve as best as we can,
              remember we aren’t predicting the sales right now, we’re predicting the prediction that Robyn would give of the sales, so any distortion will be magnified. <br>
+             <br>
              Now that we have this, it's harder to export, simply writing the equation is a much more involved process this time around. Tableau also has limitations on 
-             importing machine learning models, requiring an Rserve to be running to process it. Instead for this example, I’ll use an Rshiny app in an RMarkdown file.<br>
-             To get started, lets go ahead and save the .rds of the model so we can easily import it into the RMarkdown going forward:
+             importing machine learning models, requiring an Rserve to be running to process it. Instead for this example, I’ll use an Shiny app in an RMarkdown file.<br>
+             <br>
+             Lets go ahead and save the .rds of the model so we can easily import it into the RMarkdown going forward:
         </p>
         <div class="code-block">
             <p class="code-block-text">
