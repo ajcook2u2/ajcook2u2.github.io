@@ -232,3 +232,9 @@ input {
     align-items: center; /* Optional: Align items vertically in the center */
     width: 100%; /* Optional: Set the width to 100% to take up the entire container */
 }
+
+.image {
+    width: 100%;
+    height: auto;
+    box-shadow: 10px 10px 10px 10px #888888;
+}
