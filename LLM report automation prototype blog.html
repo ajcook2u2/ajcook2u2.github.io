@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="script.js" defer></script>
+    <title>Data Driven Allocation: A Deep Dive</title>
+    <meta charset="UTF-8">
+    <title>LLM Report Automation Proof of Concept</title>
+</head>
+<body>
+<div class="title-bar">
+    <a class="title-bar-text name" href="index.html">Anthony Cook</a>
+    <div class="nav-links text-right">
+        <a class="title-bar-text" href="index.html#portfolio">Portfolio</a>
+        <a class="title-bar-text" href="resume.html">Resume</a>
+        <a class="title-bar-text" href="index.html#about-me">About Me</a>
+        <a class="title-bar-text" href="index.html#contact-me">Contact</a>
+        <a class="title-bar-text" href="Blog.html">Blog</a>
+    </div>
+</div>
+<div class="article">
+    <h2 class="title text-center">LLM Report Automation Proof of Concept</h2>
+    <h3>Initial Goal</h3>
+    <p>During reporting, there is a lot of repetitive analysis that gets done. Automating, or at least
+        semi-automating these reports would save valuable time to be used on more valuable deliverables.</p>
+    <p>For this project, I wanted to:</p>
+    <ol>
+        <li>Automatically import the previous report</li>
+        <li>Import relevant data</li>
+        <li>Feed the data through an LLM to generate analysis, similar to previous reporting</li>
+        <li>Automatically populate the deck with the relevant data and the analysis.</li>
+    </ol>
+    <h3>Implementation</h3>
+    <p>Before we start with the code, we need to make our base presentation. The package I am using works
+        best with PowerPoint file types (.pptx), so I recommend downloading a program that can open them. I personally
+        went with <a href="https://www.libreoffice.org/download/download-libreoffice/" target="_blank">LibreOffice</a>
+        as its free and fully capable.</p>
+    <p>However you decide to proceed, we need to make a deck. I am choosing to make the slide I am manipulating the
+        second slide, so use that one if you want to plug and play the code.</p>
+    <p>For this simple proof of concept, I am simply using a table and text box, so make sure to add those to this
+        slide.
+        It will help us later to pre-format it, as shown below, to make sure everything shows up as intended.</p>
+    <img src="Screenshot 2024-07-23 183945.png" class="image" alt="test slide screenshot">
+    <br>
+    <br>
+    <br>
+    <p>With that, lets start with the packages we are using:</p>
+    <div class="code-block">
+        <p class="code-block-text">
+            from pptx import Presentation <br>#this is for importing, exporting, and manipulating the deck.<br>
+            import pandas as pd<br>
+            from gpt4all import GPT4All #this is an opensource wrapper for LLMs
+        </p>
+    </div>
+    <p>I am using synthetic data for this analysis (so I can share it with you!), and you can generate your own with the
+        script linked here, or import your own. Make sure its formatted correctly if you are following along.</p> //link
+    the synthetic generation script
+    <p>For the data, I am storing spend, impressions, clicks, conversions, cpm, ctr, conv. rate, cpa, and cpc.
+        For each year, there is a monthly and quarterly csv with the corresponding data with the first interval starting
+        at index 0.</p>
+    <p>With all that out of the way, lets get started, for real this time.</p>
+    <div class="code-block">
+        <p class="code-block-text">
+            #starting with time period selection variables for ease of repeated use<br>
+            year_selection = 2024<br>
+            quarter_selection = 1<br>
+            prs = Presentation(f'{your_directory}')<br>
+            slide1 = prs.slides[1] #assigned the second slide to a variable for future use.<br><br>
+
+            #lets go ahead and import the relevant data as per the time selection<br>
+            <br>
+            current_quarter = pd.read_csv(f'{year_selection}-quarterly.csv')<br>
+            quarter_columns = current_quarter.columns<br>
+            current_quarter = current_quarter.iloc[quarter_selection - 1]<br>
+            <br>
+            current_month = pd.read_csv(f'{year_selection}-monthly.csv')<br>
+            month_columns = current_month.columns<br>
+            current_month = current_month.iloc[(1 * (quarter_selection - 1)):(3 * (quarter_selection - 1) + 1)]<br>
+            current_month = current_month.reset_index(drop=True)<br>
+            <br>
+            yoy_quarter = pd.read_csv(f'{year_selection - 1}-quarterly.csv')<br>
+            yoy_quarter = yoy_quarter.iloc[quarter_selection - 1]<br>
+            yoy_month = pd.read_csv(f'{year_selection - 1}-monthly.csv')<br>
+            yoy_month = yoy_month.iloc[(1 * (quarter_selection - 1)):(3 * (quarter_selection))]<br>
+            yoy_month.reset_index(inplace=True, drop=True)<br>
+            <br>
+            if quarter_selection == 1:<br>
+            qoq_quarter = pd.read_csv(f'{year_selection - 1}-quarterly.csv')<br>
+            qoq_quarter = qoq_quarter.iloc[quarter_selection + 2]<br>
+            else:<br>
+            qoq_quarter = pd.read_csv(f'{year_selection}-quarterly.csv')<br>
+            qoq_quarter = qoq_quarter.iloc[quarter_selection - 2]<br>
+            <br>
+            qoq_month = pd.read_csv(f'{year_selection - 1}-monthly.csv')<br>
+            qoq_month = qoq_month.iloc[((quarter_selection - 1) * 3):(3 * quarter_selection)]<br>
+            qoq_month.reset_index(inplace=True, drop=True)<br>
+        </p>
+    </div>
+    <br>
+    <p>
+        When making analysis for reports, volume and efficiency metrics are a great inclusion, however the change is
+        a better choice to give an overview of the trajectory of the business. As such, this will generate them so they
+        can be fed into the LLM.
+    </p>
+
+
+    <p>Now that we have the data and data deltas inported, we can feed them into the LLM. Lets load up the model.</p>
+    <div class="code-block">
+        <p class="code-block-text">
+            model = GPT4All("Meta-Llama-3-8B-Instruct.Q4_0.gguf", device='gpu') #this will initialize (and download, if
+            applicable) Llama 3
+            <br><br>
+            #these two lines are to help tune the model to generate a report: <br>
+            #giving it an identity <br>#and what answer it should predict during training.
+            <br>
+            system_template = 'An analyst that generates key takeaways based on marketing data for the leadership
+            team\n'
+            <br>
+            prompt_template = 'USER: {0}\nREPORT:'
+        </p>
+    </div>
+    <br>
+    <p>
+        I use a chat in order to facilitate training the model in a multishot manner, and to enable customizable
+        responses.
+        One off queries are possible with the package, however the quality of responses are vastly inferior.
+    </p>
+    <div class="code-block">
+        <p class="code-block-text">
+            year = 2024<br>
+            quarter = 1 #initalize variables for the training for loop<br>
+            <br>
+            with model.chat_session(system_template, prompt_template):<br>
+            while quarter != quarter_selection or year != year_selection:<br>
+            #I import the corresponding data and deltas for the quarter here, leaving out to avoid repetition<br>
+            response = model.generate(<br>
+            prompt=f'Please write a short analysis (700 characters or less) for the {year}-Q{quarter} slideshow from
+            this table of deltas: {deltas_1}',<br>
+            temp=5)<br>
+            response = model.generate(<br>
+            prompt=f'Here is the final version that got delivered to the client: {refined_text[f"{year}-Q{quarter}"]}.
+            Please make future reports like this.',<br>
+            temp=0) #I made this inside a callable function, refined_text is the text from the deck after it has been
+            cleaned to its final version after generation<br>
+            <br>
+            response = model.generate(<br>
+            prompt=f'What would be the final version that gets delivered to the client, based on these: {deltas}',<br>
+            temp=5) #note the different prompt, this tells the model to follow the template from the final versions
+            provided.<br>
+        </p>
+    </div>
+    <p>
+        Now that we have the data, and the analysis from the LLM, we need to feed them back into the deck. Lets start
+        with the table.
+    </p>
+    <div class="code-block">
+        <p class="code-block-text">
+            table = slide1.shapes[1] #.shapes returns a list of objects based on the objects in the slide. In this case,
+            the table is index 1.<br>
+            table.table.cell(0, 1).text = 'Spend' #cells are accessed by (y, x) coordinates in this manner, and can have
+            text accessed and assigned in this way.<br>
+            table.table.cell(1, 1).text = f"${number_round_stylized(current_quarter['spend'])}"<br>
+            table.table.cell(2, 1).text = f"${number_round_stylized(yoy_quarter['spend'])}"<br>
+            table.table.cell(3, 1).text = f"{deltas['yoy_quarter_delta'][0]['spend']}"<br>
+        </p>
+    </div>
+    <p>
+        I'm leaving it at one column for brevity, but the process is the same for the whole table. Lets move on to the
+        text box.
+    </p>
+    <div class="code-block">
+        <p class="code-block-text">
+            text = slide1.shapes[2] #this returns the text box object<br>
+            refined_text[f'{year}-Q{quarter}'] = text.text #this allows for text to be accessed, this is how I made the
+            refined text for the training<br>
+            text.text = analysis_generator(deltas, quarter_selection, year_selection, refined_text) #this is how the
+            analysis is fed back into the deck<br>
+            prs.save(f'{year_selection}-Q{quarter_selection}.pptx') #save the deck now that the data and analysis has
+            been fed into it<br>
+        </p>
+    </div>
+    <p>So now that we have this setup, all we have to do is put it to use. We can generate analysis for the first
+        quarter,
+        adjust it to suit our needs, and then rerun it for the next quarter and so on.</p>
+    <p>Without prior training the LLM is much too wordy, exceeding its token cap and making it unreadable on a
+        slide.</p>
+    <p>
+        <br><br>
+        **Q1 2024 Key Takeaways**<br>
+        <br>
+        The Q1 2024 marketing performance report highlights significant growth and shifts in our digital marketing
+        efforts.<br>
+        <br>
+        **Quarter-over-Quarter (QoQ) Insights:**<br>
+        • Spend increased by a whopping 47.08%, driving more resources into campaigns.<br>
+        • Impressions surged by 14,141.07% as we expanded reach.<br>
+        • Clicks skyrocketed by 76,292.88%, indicating strong engagement.<br>
+        • Conversion Rate jumped by an impressive 471.22%.<br>
+        • CPA and CPM saw significant drops (-99.67% and -90.46%, respectively), suggesting improved ROI.<br>
+        <br>
+        **Year-over-Year (YoY) Insights:**<br>
+        • Spend grew modestly by 0.92%, maintaining momentum from last year.<br>
+        • Impressions increased slightly, up 4.75%.<br>
+        • Clicks decreased by a relatively small margin (-6.45%).<br>
+        • Conversion Rate rose by an encouraging 18.8%.<br>
+        <br><br><br>
+        These findings<br>
+    </p>
+    <p>I refined that down to a more brief analysis that can fit in the test slide:</p>
+    <img src="Screenshot 2024-07-23 185621.png" class="image">
+    <br><br>
+    <p>And here is the second output, trained on the refined output created for Q1:</p>
+    <br>
+    <p>
+
+        * Quarter-over-Quarter (QoQ) highlights a significant increase in spend (+44.14%), impressions (+151.07%), and
+        clicks (+174.7%) driven by improved click-through rates (CTR, +9.41%). This surge is likely due to the
+        effectiveness of recent marketing campaigns.<br>
+        * Year-over-Year (YoY), we see more modest growth with spend increasing 0.61%, impressions up 1.76%, and
+        conversions decreasing -8.14%. These gains are largely driven by continued campaign optimization.<br>
+        <br>
+        Recommendations:<br>
+        <br>
+        1. Continue executing on yearly budget pacing for On Season to capitalize on large seasonal effects on user
+        interest.<br>
+        2. Monitor campaign optimization efforts to ensure continued improvement in conversion rates and efficiency
+        costs.<br>
+        <br>
+        Overall, Q1 2024 shows promising growth, with room for further refinement and optimization. I look forward to
+        continuing this analysis<br>
+        <br>
+        Please note that the final report is more concise and focused on
+
+        <br><br>
+        <br>
+        While this was too lengthy to be readable on a slide, in just one iteration, the quality has massively improved.
+        Its not exactly perfect-it refers to YoY gains, but doesn't address Conversion decreases-but it shows that
+        the LLM is learning and making analysis more fit for a slide.
+        THis time it only took a few tweaks, and it fits in the test slide:
+        <br> <br>
+        <img src="Screenshot 2024-07-23 192216.png" class="image">
+    </p>
+    <br>
+    <h3>Takeaways</h3>
+    <p>
+        So for this, the multi-shot approach proved successful. The LLM was successfully able to refine its responses
+        with further training.
+        With a different model (4o would obviously increase quality, though alongside cost) or further tuning, output
+        quality could be improved.
+        <br><br>
+        In addition, if used to generate a real report,
+        further data could be included, such as account change history, or planned changes to allow the LLM to integrate
+        highlights
+        with further training to increase the quality. As previously mentioned,
+        I didn't include real data as to be able to share it openly here.
+        <br><br>
+        In order for this to save the most time, automated data retrival will be required, be that in the form of an API
+        connection,
+        web scraping, or something else. Once that is in place, reports will eventually become quickly proofreading and
+        correcting, reserving
+        the bulk of human effort for creating new aspects the report and adding valuable insights.
+        <br><br>
+        A moonshot goal could be to have the LLM act a personal assistant. If automated data retrival is achieved, and
+        an LLM
+        is trained to generate analysis and recommendations, A logical next step could be to integrate that trained
+        model into
+        recommending action steps on a more regular basis. This could have the advantage of collating human intelligence
+        of a team together, to create a tailored assistant with their cumulative knowledge.
+        <br><br>
+        One last note: automatic implementation of these recommendations from an LLM
+        should be avoided to prevent LLM erratic behavior and hallucinations from affecting accounts. Instead, more
+        traditional
+        programming methods should be used instead to ensure predictable and reliable behavior.
+    </p>
+</div>
+    <div class="social-links">
+        <a href="https://www.linkedin.com/in/anthony-cook-09160313a/" target="_blank"><img class="logo1" alt="LinkedIn Profile" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAe1BMVEX///8AZsgAXcYAWsUAV8QAY8fo8frv9vzd6PYAYcc8ftAAXMUObMqlwOb0+f0AYMZnl9hum9nC1e94otxdktaMr+DE1+8ZcMvl7vmyyepGhNIldM0teM57pNyDqd4AacnX5PVMh9O4zuzX5fWevOWivuYAUcJVjNSQs+LB8NeeAAAEpklEQVR4nO2dfXeaMBSHgRAVFdIK+Ia2na7rvv8nHHbHVggEz+bNJfB7ztk/M4pPTS6BXHI9DwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE4xWcX5c7Y/LH0VPAbpLw/7LM3j9ZRbzvNW6UaIQEVSSv+BlB8nIxUIsUlXnHrbVAr1UDNdVQl5nHH5ZaEitbuiwmzLIZiLyIrfhUjk1v22RWDN78KisPwzrgTt8NORwmrIiUPLfhfCeOCCNhVXPIKloqWOuhVMgr4v7ISbwnaQ+UYWNgRzu6eJKoGF8yJjH71goZ9m9mYyTUQZteCWK45eCal/xKOdyXY7KiU25IujVySt4Io3zlwgnp+m3J2UvJtuetBLN5SCU/5OWnbTCaHhuheGlAMx5pyxXQneCQ1z/kBThhrKuWnaPWV78I3TBqJnQsOs49tLoYp5oWjvwknKqeneaCjDbJ1cmq2fQsIfUu4JDQ+mLx5t3r4azgq6ESsPhIZLg2E0rzTd0ykuCQ0Nh5XLpNqW8GYHoaHhS4dvtbZnsitJRWjYfsKXP7TGXYH3nwlYDBcnrTHZFI/HUOirtcmCyFCwGDaN/uWgDJsiOFU05emlTXdPqH5DpnGoX5aSXS7zGAY7rfGJKtIw9VJ9smiepjtn6Iv6CXFNNqdhMvSj6kicUvnxGcrlreKU8L4jl6Ev1XdHPVHey2AzLMdiEV9WhrbxgfSuI6OhLwOhpBIB7c0oTkM7wBCGMOTHKUOpFiIUovy3uD/ZmMswWFT5bquqL3zdSC3PLYeX03mSJMnkfHo5iDv/gFwz71lSZXI964u3yv9fl+ik2PysTmUnP1/vuuBiMgzrl8DT67WFqCWi7z4/RRRNC53v6o5FHScMZdCSK5pk3RM+FwyDefujIrvOBGsHDIVxjfMcdSj23/DX0XyUWUdM7b1h3LmG25Fm3XvDdfdxnowRtfeGdzA1nheHYOi9mFaQB2Fo/BEHYeg9G0biMAzfDOF0GIamtA9nDCe748f+I42bU9MNCeWOGJ4/Lhe9UkaB+GhyNKxcuWH4+yYvLAr1pTnTkytOGObVQNKk6HYv1Sae2rs979Vpw9d6oFRPWpv2LAAHDGN9jAVJvZHThnP9XKenp7tsmDSESfW7fiyXDZsS3vTkbZcNdw0fE2mhxmXDpqc2YAjDRwHDW2AIQxjSAMNbYAhDGNIAw1tgODrDQV3jw/AvMKQBhrfAEIbthpRPqxuyXCwaUu721S5o05ByTwXDUe0ZSsp9MQx7m1g0pNzbxPDga1jP+k2+DOupFv9rSLk/jWGrCzmvI9teKZrev6y3aj8S5R5DpmwzWaf1lfve33qgiHLTveHv9dWP/dooN73uwdaXZeS6I436n5n0wpC0rMfg974cwf6lPRiI1DUSetBLaQX5u6nqeKTov+Hfz5u8rM7g92Qfwb76w6+NMIL6FiOoUTL8OjMjqBU0gnpPI6jZZb/uWmC77po3/Np53gjqH5bMjjZqWEYpVw3LT27qkD66EGkf6pD+ZbqO8/SzlqxUi4fUklWftWSf8/cVZbEOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEPAH+MFo86DxACQAAAAASUVORK5CYII="></a>
+    <a href="https://github.com/ajcook2u2" target="_blank"><img class="logo" alt="Github profile" src="data:image/png;base64,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"></a>
+    <p class="copywrite text-center">© 2024 Anthony Cook</p>
+    </div>
+</body>
+</html>
