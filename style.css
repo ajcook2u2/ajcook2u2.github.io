@@ -1,10 +1,11 @@
 .title {
-    color: black;
+    color: #007BFF;
     padding-top: 25px;
+    font-weight: bold;
 }
 
 .title-name {
-    color: #000000;
+    color: #007BFF;
     padding-top: 4%;
 }
 
@@ -12,32 +13,40 @@
     position: fixed;
     top: 0;
     width: 100%;
-    background-color: white;
+    background-color: #007BFF;
     font-size: 20px;
     display: flex;
+    padding: 15px;
+    margin-bottom: 200px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     justify-content: space-between;
 }
 
 .title-bar-text.name {
     margin-right: auto; 
     padding-left: 10px;
-    color: black;
+    color: white;
 }
 
 .nav-links {
     display: flex;
-    color: black;
+    color: white;
 }
 
 .title-bar-text {
     padding-right: 8px;
-    color: black;
+    color: white;
+    font-weight: bold;
+    margin-right: 20px
 }
 
 body {
     font-size: 40px;
     margin: 0;
     padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
 }
 
 .center {
@@ -45,15 +54,13 @@ body {
     margin: auto;
 }
 
-.logo1 {
-    padding-left: 80%;
-    margin-right: 1%;
-    height: 50px;
-}
+
 
 .logo {
     margin-right: 1%;
-    height: 30px;
+    height: 40px;
+    width: auto;
+    align: center
 }
 
 .business-case {
@@ -87,8 +94,11 @@ body {
   }
 
 .article {
+    padding-top: 25px;
     padding-left: 20%;
     padding-right: 20%;
+    padding-bottom: 40px;
+    margin: 0;
     font-size: 18px;
 }
 
@@ -172,15 +182,69 @@ canvas {
     padding-bottom: 25px;
 }
 
-.inner-portfolio, label {
-    display: inline-block;
-  }
+.inner-portfolio {
+    float: right; /* Makes the image float to the left, allowing text to wrap around it */
+    margin-right: 20px; /* Adds space between the image and the text */
+    margin-bottom: 10px; /* Adds space below the image */
+}
 
-.outer-portfolio {
-    display: flex;
-    justify-content: space-between;
-    padding-top: 15px;
-  }
+.text-center {
+    text-align: center;
+}
+
+form {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+
+
+.outer-portfolio label {
+    flex: 1 1 calc(50% - 20px); /* Flex-grow, flex-shrink, and flex-basis for responsiveness */
+    box-sizing: border-box;
+}
+
+/* Input fields */
+input[type="text"], input[type="email"], textarea {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+/* Textarea specific styles */
+textarea {
+    resize: vertical; /* Allows vertical resizing only */
+}
+
+/* Button styling */
+button {
+    padding: 10px 20px;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #007BFF;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .outer-portfolio label {
+        flex: 1 1 100%; /* Stack the labels on top of each other */
+    }
+}
+
+@media (max-width: 480px) {
+    form {
+        padding: 10px; /* Reduce padding on smaller screens */
+    }
+    textarea {
+        width: 100%;
+    }
+}
 
 .title-link {
     color: inherit;
@@ -192,18 +256,33 @@ input {
 }
 
 .copywrite {
-    font-size: 13px;
+    margin-top: 15px;
+    font-size: 15px;
 }
 
 .social-links {
-    padding-top: 0;
+    background-color: #007BFF;
+    padding: 0;
+    padding-top: 25px;
+    overflow: hidden;
     margin: 0;
     padding-bottom: 0;
+    color: white;
+    display:flex;
+    justify-content: center;
+    flex-direction: column
 }
 
-.about-me-text {
-    padding-right: 25px;
+.logos-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px; /* Adjust the gap between logos as needed */
+    padding-left: 30px;
+
 }
+
+
 
 .subtitle {
     font-size: 12px;
@@ -237,4 +316,14 @@ input {
     width: 100%;
     height: auto;
     box-shadow: 10px 10px 10px 10px #888888;
+}
+
+
+.outer-portfolio1, .outer-portfolio {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center; /* Center items horizontally */
+    align-items: center; /* Center items vertically if needed */
+    max-width: 100%; /* Ensure it doesn't exceed its parent width */
 }
