@@ -103,14 +103,6 @@ body {
 }
 
 
-h3, h4 {
-    margin-bottom: 0px;
-    text-decoration: underline;
-    text-decoration-color: black;
-    text-underline-offset: 7px;
-}
-
-
 .image-container {
     position: relative;
     width: 200px; 
@@ -326,4 +318,8 @@ input {
     justify-content: center; /* Center items horizontally */
     align-items: center; /* Center items vertically if needed */
     max-width: 100%; /* Ensure it doesn't exceed its parent width */
+}
+
+h2 {
+    color: #007BFF;
 }
