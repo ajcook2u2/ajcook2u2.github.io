@@ -21,7 +21,7 @@
     </div>
         <div class="article">
     <h1 class="title text-center">Data Driven Allocation: A Deep Dive</h1>
-        <h2>Intro</h2>
+        <h2 class="title text-center">Intro</h2>
         <p>When planning marketing budgets, it can quickly get complicated, 
             juggling between different tactics, KPIs, and different groups of people with different perspectives can quickly make the process more challenging.</p>
         <p>
@@ -31,7 +31,7 @@
         <p>The Robyn MMM is an advanced open source MMM from Meta Science Lab, an open source cutting edge Marketing Mix Model, that we can use to generate forecasts to 
             plan out marketing budgets.
         </p>
-        <h2>Data Preprocessing</h2>
+        <h2 class="title text-center">Data Preprocessing</h2>
         <p>Lets hop into R and import the sales data to get started, it has sales data along with TikTok, Facebook, and Google Ads spend broken out by week.
             We'll also need to do some light preprocessing to feed it into Robyn.</p>
         <div class="code-block">
@@ -43,7 +43,7 @@
             </p>
         </div>
         <br>
-        <h2>Generating the models with Robyn</h2>
+        <h2 class="title text-center">Generating the models with Robyn</h2>
         <p>Robyn uses 'Input Collect' to contain the inputs that will be used to build the models. Lets prefill it here, to make our code more readable.</p>
         <div class="code-block">
             <p class="code-block-text">
@@ -110,7 +110,7 @@
             </p>
         </div>
         <br>
-        <h2>Response Curves</h2>
+        <h2 class="title text-center">Response Curves</h2>
         <p>We can generate a response curve via the 'robyn_response' function.</p>
         <div class="code-block">
             <p class="code-block-text">
@@ -192,7 +192,7 @@
             Well given how the saturation curve is generated here, we can’t use Robyn directly to achieve this, as the underlying equation has a hard limit on the values it can generate.
              We can however estimate what it would be with machine learning. However this comes with it's own drawbacks that I’ll get into.<br>
         </p>
-        <h2>
+        <h2 class="title text-center">
             Machine Learning Extension
         </h2>
         <p>
