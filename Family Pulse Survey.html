@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="script.js" defer></script>
+    <title>Family Pulse Survey Blog Post</title>
+</head>
+<body>
+    <div class="title-bar">
+        <a class="title-bar-text name" href="index.html">Anthony Cook</a>
+        <div class="nav-links text-right">
+            <a class="title-bar-text" href="index.html#portfolio">Portfolio</a>
+            <a class="title-bar-text" href="resume.html">Resume</a>
+            <a class="title-bar-text" href="index.html#about-me">About Me</a>
+            <a class="title-bar-text" href="index.html#contact-me">Contact</a>
+            <a class="title-bar-text" href="Blog.html">Blog</a>
+        </div>
+    </div>
+    <div class="article">
+        <img src="1723771031767.png">
+    <h1 class="title text-center">Why the Household Pulse Survey Is Essential for Understanding Consumer Sentiment</h1>
+
+<br>
+<p>
+The Household Pulse Survey from the US Census is an under-discovered resource, particularly relevant in light of changing consumer behavior.
+<br><br>
+When digging into consumer behavior, it’s tempting to focus on economic factors. After all, consumer behavior is affected by the economy; if GDP slows or even declines, consumers will likely cut back on spending. However, there are a couple of problems with this line of thinking.
+<br><br>
+First, different locations will have different economic situations. For example, Silicon Valley, driven by the volatile tech sector, is much more likely to be affected by a recession than Washington, DC, which is supported by the stable government sector. Even with more granular data, fiscal metrics like GDP can never account for other factors that influence human behavior. Historical trends, culture, and other unseen factors affect how people perceive their economic situation. And it’s our perceptions, not objective facts, that drive our actions.
+<br><br>
+This is where the Household Pulse Survey becomes invaluable in consumer behavior analysis. The survey queries participants about data that would otherwise be difficult to quantify. For example, have you felt pressure to move? Did the price of gas affect your behavior? How much stress have price increases caused you? These things invariably affect your behavior, but they are hard to quantify and predict, which is why the Household Pulse Survey which directly queries this is so valuable. And the survey contains even more valuable data, too much to cover here in detail.
+<br><br>
+Moreover, the Household Pulse Survey offers data on a more frequent basis than many other Census datasets. While data sets like the American Community Survey are typically updated annually, leading to longer lags in capturing trends, the Household Pulse Survey provides monthly insights with a relatively short delay of 2-3 months (e.g., June data is released in August). This increased frequency allows analysts and policymakers to identify and respond to emerging trends more rapidly.
+<br><br>
+That said, there are some drawbacks. For starters, it’s a survey, with all the inherent limitations. Additionally, it’s an “experimental” dataset according to the US Census, meaning it has evolved over time. For example, spending data didn’t exist until week 13 (8/19/2020), the start of Phase 2. As the data has changed so much, automating data pulls can be challenging; the two provided APIs don’t cover the entire time range of available data.
+<br><br>
+However, there’s a simple workaround. Instead of relying on the APIs, you can use the .xlsx download link and loop through it for the tables you want, swapping in the new time values, like this for 2020-2023, switching out the year and week number:
+<br><br>
+https://www2.census.gov/programs-surveys/demo/tables/hhp/{year}/wk{week_number}/health1_week{week_number}.xlsx
+<br><br>
+And like this for 2024:
+<br><br>
+https://www2.census.gov/programs-surveys/demo/tables/hhp/2024/cycle{cycle}/employ4b_cycle{cycle}.xlsx
+<br><br>
+Despite its drawbacks, the Household Pulse Survey offers the best way to gain a comprehensive understanding of the nation's sentiment. While it is a survey that has undergone changes, limiting its use, it provides a quarterly snapshot of valuable data that would otherwise be difficult to quantify. And while retrieving it can be a challenge, a simple workaround is all that’s needed to automate data pulls.
+</p>
+        </div>
+<div class="social-links">
+  <div class="logos-container">
+  <a href="https://www.linkedin.com/in/anthony-cook-09160313a/" target="_blank"><img class="logo" alt="LinkedIn Profile" src="In-White-128-Γö¼┬½@2x.png"></a>
+<a href="https://github.com/ajcook2u2" target="_blank"><img class="logo" alt="Github profile" src="github-mark-white.png"></a>
+  <br><br>
+    </div>
+<p class="copywrite text-center">© 2024 Anthony Cook</p>
+</div>
+</body>
+</html>
